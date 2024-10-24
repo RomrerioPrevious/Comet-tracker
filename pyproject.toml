@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "comet-tracker"
+version = "0.1.0"
+description = "This project is for trecking comets."
+authors = ["RomrerioPrevious <ggJohn12345@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+icecream = "^2.1.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
