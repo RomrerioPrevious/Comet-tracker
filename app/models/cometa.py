@@ -6,9 +6,9 @@ from datetime import datetime
 class Comet:
     id: int
     name: str
-    period: float
-    distance_earth: float
-    distance_sun: float
-    destroy_chance: float
     diameter: float
+    neo: bool
+    albedo: float
+    period: float
+    class_: str
 
