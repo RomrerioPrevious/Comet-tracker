@@ -1,1 +1,1 @@
-from .cometa import Comet
+from .cometa import Comet, fabric_comet_by_row
