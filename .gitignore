@@ -19,4 +19,4 @@ __pycache__
 **.log
 dist
 build
-venv
+resources/dataset.csv

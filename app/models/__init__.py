@@ -1,1 +1,1 @@
-from .cometa import Comet
+from .cometa import *
