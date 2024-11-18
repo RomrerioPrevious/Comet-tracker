@@ -9,17 +9,17 @@ service = BDService()
 bot = telebot.TeleBot(config["bot"]["api"])
 
 find_keyboard = types.InlineKeyboardMarkup([[
-    types.InlineKeyboardButton(text="По ID", callback_data="id"),
-    types.InlineKeyboardButton(text="По названию", callback_data="name"),
-    types.InlineKeyboardButton(text="По диаметру", callback_data="diameter"),
-    types.InlineKeyboardButton(text="Случайно", callback_data="random"),
+    types.InlineKeyboardButton(text="По ID", callback_data="get_id"),
+    types.InlineKeyboardButton(text="По названию", callback_data="get_name"),
+    types.InlineKeyboardButton(text="По диаметру", callback_data="get_diameter"),
+    types.InlineKeyboardButton(text="Случайно", callback_data="get_random"),
 ]])
 
 action_keyboard = types.InlineKeyboardMarkup([[
-    types.InlineKeyboardButton(text="Найти", callback_data="keyboard"),
-    types.InlineKeyboardButton(text="Удалить", callback_data="delete"),
-    types.InlineKeyboardButton(text="Изменить", callback_data="update"),
-    types.InlineKeyboardButton(text="Создать", callback_data="create")
+    types.InlineKeyboardButton(text="Найти", callback_data="admin_get"),
+    types.InlineKeyboardButton(text="Удалить", callback_data="admin_delete"),
+    types.InlineKeyboardButton(text="Изменить", callback_data="admin_update"),
+    types.InlineKeyboardButton(text="Создать", callback_data="admin_create")
 ]])
 
 
@@ -28,7 +28,7 @@ def start(message):
     if message.text == "/start":
         bot.send_message(message.from_user.id, "По какому параметру найти комету?", reply_markup=find_keyboard)
     elif message.text == "/admin":
-        bot.send_message(message.from_user.id, "Введите пароль:", reply_markup=action_keyboard)
+        bot.send_message(message.from_user.id, "Введите пароль:")
         bot.register_next_step_handler(message, auth)
     else:
         bot.send_message(message.from_user.id, "Напиши /start")
@@ -37,19 +37,19 @@ def start(message):
 """USER"""
 
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: call.data[0:3] == "get")
 def find_comet(call):
     match call.data:
-        case "random":
+        case "get_random":
             comet = service.get_random_comet()
             bot.send_message(call.message.chat.id, str(comet))
-        case "diameter":
+        case "get_diameter":
             bot.send_message(call.message.chat.id, "Напиши диаметр")
             bot.register_next_step_handler(call.message, get_by_diameter)
-        case "name":
+        case "get_name":
             bot.send_message(call.message.chat.id, "Напиши имя")
             bot.register_next_step_handler(call.message, get_by_name)
-        case "id":
+        case "get_id":
             bot.send_message(call.message.chat.id, "Напиши ID")
             bot.register_next_step_handler(call.message, get_by_id)
 
@@ -83,27 +83,27 @@ def get_by_id(message):
 
 def auth(message):
     if message.text == config["bot"]["password"]:
-        bot.send_message(message.message.chat.id, "Пароль не верный")
-    else:
         bot.send_message(message.from_user.id, "Что вы хотите сделать?", reply_markup=action_keyboard)
+    else:
+        bot.send_message(message.from_user.id, "Пароль не верный. Введите его повторно.")
         bot.register_next_step_handler(message, auth)
 
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: call.data[0:5] == "admin")
 def get_admin(call):
-    match call:
-        case "delete":
+    match call.data:
+        case "admin_delete":
             bot.send_message(call.message.chat.id, "Введи id кометы")
             bot.register_next_step_handler(call.message, delete)
-        case "update":
+        case "admin_update":
             bot.send_message(call.message.chat.id, "Введи id кометы")
             bot.register_next_step_handler(call.message, find_to_update)
-        case "create":
+        case "admin_create":
             bot.send_message(call.message.chat.id,
                              "Введи поля кометы через запятую: name, diameter, neo, albedo, period, class")
             bot.register_next_step_handler(call.message, create)
-        case "keyboard":
-            bot.send_message(call.message.chat.id, "Напиши /start")
+        case "admin_get":
+            bot.send_message(call.message.chat.id, "По какому параметру найти комету?", reply_markup=find_keyboard)
 
 
 def delete(message):

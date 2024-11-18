@@ -3,6 +3,7 @@ from app import *
 
 
 def main():
+    ic("Comet-tracker has been started.")
     bot.polling(none_stop=True, interval=0)
 
 
