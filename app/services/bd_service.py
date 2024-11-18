@@ -1,5 +1,6 @@
 from app.models.cometa import Comet, fabric_comet_by_row
 from app.config import Config
+from random import randint
 import pandas as pd
 
 
@@ -11,7 +12,7 @@ class BDService:
 
     def get_comet_by_id(self, id: int) -> Comet:
         row = self.bd.query(f"id == '{id}'")
-        if not row:
+        if row.empty:
             raise IndexError(f"Don't find comet with id '{id}'")
         return fabric_comet_by_row(row)
 
@@ -20,6 +21,10 @@ class BDService:
         if row.empty:
             raise IndexError(f"Don't find comet with name '{name}'")
         return fabric_comet_by_row(row)
+
+    def get_random_comet(self) -> Comet:
+        id = randint(0, 100000)
+        return self.get_comet_by_id(id)
 
     def get_comet_by_diameter(self, diameter: str) -> Comet:
         row = self.bd.query(f"diameter == '{diameter.capitalize()}'")
