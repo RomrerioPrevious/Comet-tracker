@@ -15,23 +15,33 @@ find_keyboard = types.InlineKeyboardMarkup([[
     types.InlineKeyboardButton(text="Случайно", callback_data="get_random"),
 ]])
 
-action_keyboard = types.InlineKeyboardMarkup([[
+admin_keyboard = types.InlineKeyboardMarkup([[
     types.InlineKeyboardButton(text="Найти", callback_data="admin_get"),
     types.InlineKeyboardButton(text="Удалить", callback_data="admin_delete"),
     types.InlineKeyboardButton(text="Изменить", callback_data="admin_update"),
     types.InlineKeyboardButton(text="Создать", callback_data="admin_create")
 ]])
 
+action_keyboard = types.InlineKeyboardMarkup([[
+    types.InlineKeyboardButton(text="Найти комету", callback_data="action_get"),
+    types.InlineKeyboardButton(text="Открыть админ панель", callback_data="action_admin")
+]])
 
-@bot.message_handler(content_types=['text'])
+
+@bot.message_handler(content_types=["text"])
 def start(message):
     if message.text == "/start":
-        bot.send_message(message.from_user.id, "По какому параметру найти комету?", reply_markup=find_keyboard)
-    elif message.text == "/admin":
-        bot.send_message(message.from_user.id, "Введите пароль:")
-        bot.register_next_step_handler(message, auth)
-    else:
-        bot.send_message(message.from_user.id, "Напиши /start")
+        bot.send_message(message.from_user.id, "Что хотите сделать?", reply_markup=action_keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: call.data[0:6] == "action")
+def start(call):
+    match call.data:
+        case "action_get":
+            bot.send_message(call.message.chat.id, "По какому параметру найти комету?", reply_markup=find_keyboard)
+        case "action_admin":
+            bot.send_message(call.message.chat.id, "Введите пароль:")
+            bot.register_next_step_handler(call.message, auth)
 
 
 """USER"""
@@ -83,7 +93,7 @@ def get_by_id(message):
 
 def auth(message):
     if message.text == config["bot"]["password"]:
-        bot.send_message(message.from_user.id, "Что вы хотите сделать?", reply_markup=action_keyboard)
+        bot.send_message(message.from_user.id, "Что вы хотите сделать?", reply_markup=admin_keyboard)
     else:
         bot.send_message(message.from_user.id, "Пароль не верный. Введите его повторно.")
         bot.register_next_step_handler(message, auth)
@@ -96,8 +106,9 @@ def get_admin(call):
             bot.send_message(call.message.chat.id, "Введи id кометы")
             bot.register_next_step_handler(call.message, delete)
         case "admin_update":
-            bot.send_message(call.message.chat.id, "Введи id кометы")
-            bot.register_next_step_handler(call.message, find_to_update)
+            bot.send_message(call.message.chat.id,
+                             "Введи поля кометы через запятую: id, name, diameter, neo, albedo, period, class")
+            bot.register_next_step_handler(call.message, update)
         case "admin_create":
             bot.send_message(call.message.chat.id,
                              "Введи поля кометы через запятую: name, diameter, neo, albedo, period, class")
@@ -124,17 +135,11 @@ def create(message):
         bot.send_message(message.from_user.id, "Не удалось создать комету")
 
 
-def find_to_update(message):
-    bot.send_message(message.message.chat.id,
-                     "Введи поля кометы через запятую: name, diameter, neo, albedo, period, class")
-    bot.register_next_step_handler(message, update)
-
-
 def update(message):
     fields = message.text.split(", ")
     comet = fabric_comet_by_fields(fields)
     try:
-        service.create_comet(comet)
+        service.update_comet(comet)
         bot.send_message(message.from_user.id, "Комета обновленна")
     except IndexError:
         bot.send_message(message.from_user.id, "Не удалось обновить комету")
