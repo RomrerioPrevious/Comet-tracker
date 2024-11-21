@@ -25,9 +25,10 @@ class Comet:
     def __str__(self) -> str:
         return f"{self.name}.\n" \
                f"Это астероид класса {self.class_} " \
-               f"с диаметром равным {self.diameter}м, c neo авным {self.neo}" \
-               f", c альбедо равным {self.albedo} и с периодом {self.period}\n" \
-               f"\n" \
+               f"с диаметром равным {self.diameter}м.\n" \
+               f"Neo: {self.neo}\n" \
+               f"Альбедо: {self.albedo}\n" \
+               f"Период: {self.period}\n" \
                f"\n\n Нажмите /start для продолжения."
 
 
